@@ -1,11 +1,16 @@
-const app = require('express')();
+const express = require('express');
 const bodyParser = require('body-parser');
-const expressGraphql = require('express-graphql');
-const { buildSchema } = require('graphql');
-const feedItemsData = require('./FeedItems.json');
+const domain = require('./src/domain');
 
 const { log } = console;
+const app = express();
+const apiRouter = express.Router();
 app.use(bodyParser.json());
+apiRouter.get('/feed', (req, res) => {
+  res.json(domain.feed(res.fields, req.filters));
+});
+app.use('/api', apiRouter);
+app.use(express.static('public'));
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
@@ -15,30 +20,5 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use('/api', expressGraphql({
-  graphiql: true,
-  schema: buildSchema(`
-    type Query {
-      feedItem(id: Int!): FeedItem
-      feedItems(userId: Int): [FeedItem]
-    },
-    type FeedItem {
-      id: Int
-      FeedText: String
-    }
-  `),
-  rootValue: {
-    feedItem(args) {
-      log('args', args);
-      return feedItemsData.filter(x => x.feedid === args.id)[0];
-    },
-    feedItems(args) {
-      if (args.userid) {
-        return feedItemsData.filter(x => x.userid === args.topic);
-      }
-      return feedItemsData;
-    },
-  },
-}));
-app.listen(8080, () => log('Server listening on port 8080...'));
+app.listen(process.env.PORT || 8080, () => log(`Server listening on port ${process.env.PORT || 8080}...`));
 module.exports = app;

@@ -1,3 +1,8 @@
+# Solution instructions
+
+Run npm install
+
+
 # Feed Challenge
 A Coding Challenge for developer candidates
 
