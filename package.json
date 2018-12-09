@@ -1,0 +1,30 @@
+{
+  "name": "feed_challenge",
+  "version": "1.0.0",
+  "description": "A Coding Challenge for developer candidates",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sselvaggi/feed_challenge.git"
+  },
+  "author": "sergio selvaggi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sselvaggi/feed_challenge/issues"
+  },
+  "homepage": "https://github.com/sselvaggi/feed_challenge#readme",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "express-graphql": "^0.7.1",
+    "graphql": "^14.0.2"
+  },
+  "devDependencies": {
+    "eslint": "^5.9.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.14.0"
+  }
+}
