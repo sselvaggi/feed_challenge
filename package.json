@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "mocha test.js"
+    "test": "mocha test.js",
+    "default-dump": "node default-dump.js"
   },
   "repository": {
     "type": "git",

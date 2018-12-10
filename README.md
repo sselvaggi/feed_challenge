@@ -1,6 +1,12 @@
 # Install 
 clone this repo and to the directory with your command line interface
+```
 docker-compose up --build
+```
+##Load default data (optional)
+```
+npm run default-dump
+```
 
 Use the REST API with a single method
 GET http://localhost:8080/api/feed

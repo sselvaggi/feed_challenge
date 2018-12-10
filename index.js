@@ -10,6 +10,7 @@ const FeedItemModel = require('./models/feed-item.model');
 const {
   buildSchema, graphql, GraphQLObjectType, GraphQLSchema,
 } = require('graphql');
+
 mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true });
 mongoose.connection.on('error', console.error.bind(console, 'connection error:'));
 mongoose.connection.once('open', () => {});
@@ -34,25 +35,26 @@ app.use('/graphql', expressGraphql({
       feed(filterFeedByOwnerId: Int): [FeedItem]
     },
     type FeedItem {
-      id: Int,
       createdAt: String,
       text: String,
       owner: User,
       comments: [Comment]
     },
     type User {
-      id: Int
       username: String,
       createdAt: String
     },
     type Comment {
-      id: Int
       text: String,
       owner: User
     },
   `),
   rootValue: {
-    feed: FeedItemModel.find,
+    async feed(args) {
+      console.log('args', args);
+      const result = await FeedItemModel.find();
+      return result;
+    },
   },
 }));
 

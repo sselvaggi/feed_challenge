@@ -18,6 +18,9 @@ chai.use(chaiHttp);
 // the element with missing data should not be returned by the API.
 // For example, if the username of a commenter is missing, the comment should not be displayed at all.
 describe('listFeedItems', () => {
+  beforeEach(() => {
+    console.log("before")
+  });
   it('Should have a name field of type String', async () => {
     const feedItems = await FeedItemModel.find();
     feedItems.forEach((feedItem) => {
@@ -28,6 +31,7 @@ describe('listFeedItems', () => {
       } catch (e) {
         log(feedItem, ' has not text', e);
       }
+
       feedItem.should.have.a.property('owner').with.has.a.property('username');
       feedItem.comments.forEach((comment) => {
         try {
