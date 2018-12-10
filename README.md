@@ -1,15 +1,15 @@
 # Solution instructions
 
-Run:
+Run:```
 npm install; npm run start
-
+```
 Use the REST API with a single method
 GET http://localhost:8080/api/feed
 
 or
 
 Use the GraphQL API at http://localhost:8080/graphql
-query consumeFeed($filterFeedByOwnerId: Int,) {
+```query consumeFeed($filterFeedByOwnerId: Int,) {
     feed(filterFeedByOwnerId: $filterFeedByOwnerId) {
         text,
         createdAt,
@@ -26,13 +26,13 @@ query consumeFeed($filterFeedByOwnerId: Int,) {
             } 
     	}
     }
-}
+}```
 
 If is defined "filterFeedByOwnerId" the feed will be filtered by Owner's id 
 variables:
-{
+```{
   "filterFeedByOwnerId": 1
-}
+}```
 
 
 # Feed Challenge
