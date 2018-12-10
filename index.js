@@ -27,7 +27,7 @@ app.use('/graphql', expressGraphql({
   graphiql: true,
   schema: buildSchema(`
     type Query {
-      feed(filterByOwnerId: Int): [FeedItem]
+      feed(filterFeedByOwnerId: Int, filterFeedCommentByOwnerId): [FeedItem]
     },
     type FeedItem {
       id: Int,
