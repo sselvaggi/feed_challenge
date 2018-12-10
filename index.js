@@ -1,3 +1,4 @@
+require('dotenv').config();
 const mongoose = require('mongoose');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -5,7 +6,7 @@ const expressGraphql = require('express-graphql');
 const {
   buildSchema, graphql, GraphQLObjectType, GraphQLSchema,
 } = require('graphql');
-mongoose.connect('mongodb://localhost/feed', { useNewUrlParser: true });
+mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true });
 mongoose.connection.on('error', console.error.bind(console, 'connection error:'));
 mongoose.connection.once('open', () => {});
 const User = mongoose.model('User', new mongoose.Schema({
@@ -21,8 +22,10 @@ const FeedItem = mongoose.model('FeedItem', new mongoose.Schema({
 const { log } = console;
 const app = express();
 const cors = require('cors');
+const helmet = require('helmet');
 const apiRouter = express.Router();
 app.use(cors());
+app.use(helmet());
 app.use(bodyParser.json());
 apiRouter.get('/feed', async (req, res) => {
   res.json(await FeedItem.find());
