@@ -1,16 +1,26 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const expressGraphql = require('express-graphql');
-const { buildSchema, graphql, GraphQLObjectType, GraphQLSchema } = require('graphql');
-const { GraphQLDate, GraphQLTime, GraphQLDateTime} = require('graphql-iso-date');
-const domain = require('./src/domain');
+const {
+  buildSchema, graphql, GraphQLObjectType, GraphQLSchema,
+} = require('graphql');
+const feedService = require('./src/feedService');
+const feeds = require('./FeedItems.json');
+const user = require('./Users.json');
+const comments = require('./Comments.json');
+
+feedService.setDB({
+  feeds,
+  user,
+  comments,
+});
 
 const { log } = console;
 const app = express();
 const apiRouter = express.Router();
 app.use(bodyParser.json());
 apiRouter.get('/feed', (req, res) => {
-  res.json(domain.feed(res.fields, req.filters));
+  res.json(feedService.fetch(res.fields, req.filters));
 });
 app.use('/api', apiRouter);
 app.use(express.static('public'));
@@ -47,7 +57,9 @@ app.use('/graphql', expressGraphql({
       owner: User
     },
   `),
-  rootValue: domain,
+  rootValue: {
+    feed: feedService.fetch,
+  },
 }));
 
 app.listen(process.env.PORT || 8080, () => log(`Server listening on port ${process.env.PORT || 8080}...`));

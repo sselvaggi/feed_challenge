@@ -1,10 +1,9 @@
-const feedItemsData = require('../FeedItems.json');
-const userData = require('../Users.json');
-const commentsData = require('../Comments.json');
-
-const domain = {
+const service = {
+  setDB(db) {
+    service.db = db;
+  },
   findUserById(id) {
-    const rawUser = userData.find(x => x.userid === id);
+    const rawUser = service.db.user.find(x => x.userid === id);
     if (!rawUser) {
       return null;
     }
@@ -17,9 +16,9 @@ const domain = {
   findCommentsByFeedId(feedid) {
     const result = [];
     // eslint-disable-next-line no-restricted-syntax
-    for (const comment of commentsData) {
+    for (const comment of service.db.comments) {
       if (comment.feedid === feedid) {
-        const commentUser = this.findUserById(comment.userid);
+        const commentUser = service.findUserById(comment.userid);
         if (commentUser) {
           result.push({
             owner: commentUser,
@@ -31,24 +30,24 @@ const domain = {
     }
     return result;
   },
-  feed(args = {}) {
+  fetch(args = {}) {
     const result = [];
     const {
       filterFeedByOwnerId = null,
     } = args;
     // eslint-disable-next-line no-restricted-syntax
-    for (const feedItem of feedItemsData) {
-      const user = this.findUserById(feedItem.userid);
+    for (const feedItem of service.db.feeds) {
+      const user = service.findUserById(feedItem.userid);
       if (user && (!filterFeedByOwnerId || filterFeedByOwnerId === user.id)) {
         result.push({
           owner: user,
           text: feedItem.FeedText,
           createdAt: feedItem.createdAt,
-          comments: this.findCommentsByFeedId(feedItem.feedid),
+          comments: service.findCommentsByFeedId(feedItem.feedid),
         });
       }
     }
     return result;
   },
 };
-module.exports = domain;
+module.exports = service;

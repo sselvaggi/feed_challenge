@@ -1,7 +1,7 @@
 const { log } = console;
 const { expect } = require('chai');
 const should = require('chai').should(); // actually call the function
-const domain = require('./domain');
+const feedService = require('./feedService');
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const server = require('../index');
@@ -15,7 +15,7 @@ chai.use(chaiHttp);
 // For example, if the username of a commenter is missing, the comment should not be displayed at all.
 describe('listFeedItems', () => {
   it('Should have a name field of type String', () => {
-    const feedItems = domain.feed();
+    const feedItems = feedService.fetch();
     feedItems.forEach((feedItem) => {
       feedItem.should.be.a('object');
       feedItem.should.have.a.property('createdAt');
@@ -37,7 +37,7 @@ describe('listFeedItems', () => {
     });
   });
   it('Should be filtered by filterFeedByOwnerId', () => {
-    const feedItems = domain.feed({filterFeedByOwnerId: 10 });
+    const feedItems = feedService.fetch({filterFeedByOwnerId: 10 });
     feedItems.forEach((feedItem) => {
       feedItem.should.be.a('object');
       feedItem.should.have.a.property('owner').with.has.a.property('id');

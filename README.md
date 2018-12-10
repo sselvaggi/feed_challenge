@@ -1,9 +1,7 @@
-# Solution instructions
+# Install 
+clone this repo and to the directory with your command line interface
+docker-compose up --build
 
-Run:
-```
-npm install; npm run start
-```
 Use the REST API with a single method
 GET http://localhost:8080/api/feed
 
