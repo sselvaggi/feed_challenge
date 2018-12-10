@@ -1,6 +1,7 @@
 # Solution instructions
 
-Run:```
+Run:
+```
 npm install; npm run start
 ```
 Use the REST API with a single method
