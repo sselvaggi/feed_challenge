@@ -1,5 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const expressGraphql = require('express-graphql');
+const { buildSchema, graphql, GraphQLObjectType, GraphQLSchema } = require('graphql');
+const { GraphQLDate, GraphQLTime, GraphQLDateTime} = require('graphql-iso-date');
 const domain = require('./src/domain');
 
 const { log } = console;
@@ -19,6 +22,33 @@ app.use((req, res, next) => {
   res.header('Vary', 'Accept-Encoding');
   next();
 });
+
+app.use('/graphql', expressGraphql({
+  graphiql: true,
+  schema: buildSchema(`
+    type Query {
+      feed(filterByOwnerId: Int): [FeedItem]
+    },
+    type FeedItem {
+      id: Int,
+      createdAt: String,
+      text: String,
+      owner: User,
+      comments: [Comment]
+    },
+    type User {
+      id: Int
+      username: String,
+      createdAt: String
+    },
+    type Comment {
+      id: Int
+      text: String,
+      owner: User
+    },
+  `),
+  rootValue: domain,
+}));
 
 app.listen(process.env.PORT || 8080, () => log(`Server listening on port ${process.env.PORT || 8080}...`));
 module.exports = app;
