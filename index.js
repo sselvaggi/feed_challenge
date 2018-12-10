@@ -1,26 +1,29 @@
+const mongoose = require('mongoose');
 const express = require('express');
 const bodyParser = require('body-parser');
 const expressGraphql = require('express-graphql');
 const {
   buildSchema, graphql, GraphQLObjectType, GraphQLSchema,
 } = require('graphql');
-const feedService = require('./src/feedService');
-const feeds = require('./FeedItems.json');
-const user = require('./Users.json');
-const comments = require('./Comments.json');
-
-feedService.setDB({
-  feeds,
-  user,
-  comments,
-});
+mongoose.connect('mongodb://localhost/feed', { useNewUrlParser: true });
+mongoose.connection.on('error', console.error.bind(console, 'connection error:'));
+mongoose.connection.once('open', () => {});
+const User = mongoose.model('User', new mongoose.Schema({
+  username: String,
+  createdAt: { type: Date, default: new Date() },
+}));
+const FeedItem = mongoose.model('FeedItem', new mongoose.Schema({
+  text: String,
+  comments: [{ text: String, owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User' } }],
+  owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+}));
 
 const { log } = console;
 const app = express();
 const apiRouter = express.Router();
 app.use(bodyParser.json());
-apiRouter.get('/feed', (req, res) => {
-  res.json(feedService.fetch(res.fields, req.filters));
+apiRouter.get('/feed', async (req, res) => {
+  res.json(await FeedItem.find());
 });
 app.use('/api', apiRouter);
 app.use(express.static('public'));
@@ -58,7 +61,7 @@ app.use('/graphql', expressGraphql({
     },
   `),
   rootValue: {
-    feed: feedService.fetch,
+    feed: FeedItem.find,
   },
 }));
 
