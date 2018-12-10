@@ -1,8 +1,8 @@
 # Solution instructions
 
 Run:
-npm install\
-npm run start\
+  npm install
+  npm run start
 
 browse: http://localhost:8080/graphql
 
