@@ -9,7 +9,8 @@ GET http://localhost:8080/api/feed
 or
 
 Use the GraphQL API at http://localhost:8080/graphql
-```query consumeFeed($filterFeedByOwnerId: Int,) {
+```
+query consumeFeed($filterFeedByOwnerId: Int,) {
     feed(filterFeedByOwnerId: $filterFeedByOwnerId) {
         text,
         createdAt,
@@ -26,13 +27,16 @@ Use the GraphQL API at http://localhost:8080/graphql
             } 
     	}
     }
-}```
+}
+```
 
 If is defined "filterFeedByOwnerId" the feed will be filtered by Owner's id 
 variables:
-```{
+```
+{
   "filterFeedByOwnerId": 1
-}```
+}
+```
 
 
 # Feed Challenge
