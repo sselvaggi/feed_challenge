@@ -20,21 +20,15 @@ const FeedItem = mongoose.model('FeedItem', new mongoose.Schema({
 
 const { log } = console;
 const app = express();
+const cors = require('cors');
 const apiRouter = express.Router();
+app.use(cors());
 app.use(bodyParser.json());
 apiRouter.get('/feed', async (req, res) => {
   res.json(await FeedItem.find());
 });
 app.use('/api', apiRouter);
 app.use(express.static('public'));
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.header('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS');
-  res.header('Vary', 'Accept-Encoding');
-  next();
-});
 
 app.use('/graphql', expressGraphql({
   graphiql: true,
