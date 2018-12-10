@@ -1,10 +1,39 @@
 # Solution instructions
 
 Run:
-  npm install
-  npm run start
+npm install; npm run start
 
-browse: http://localhost:8080/graphql
+Use the REST API with a single method
+GET http://localhost:8080/api/feed
+
+or
+
+Use the GraphQL API at http://localhost:8080/graphql
+query consumeFeed($filterFeedByOwnerId: Int,) {
+    feed(filterFeedByOwnerId: $filterFeedByOwnerId) {
+        text,
+        createdAt,
+        owner {
+    		id,
+            username
+        },
+    	comments {
+    		id,
+            text,
+            owner {
+                id,
+                username
+            } 
+    	}
+    }
+}
+
+If is defined "filterFeedByOwnerId" the feed will be filtered by Owner's id 
+variables:
+{
+  "filterFeedByOwnerId": 1
+}
+
 
 # Feed Challenge
 A Coding Challenge for developer candidates
