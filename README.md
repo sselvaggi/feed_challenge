@@ -1,7 +1,10 @@
 # Solution instructions
 
-Run npm install
+Run:
+npm install
+npm run start
 
+browse http://localhost:8080/graphql
 
 # Feed Challenge
 A Coding Challenge for developer candidates
