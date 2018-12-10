@@ -1,10 +1,15 @@
+process.env.MONGODB_URI = 'mongodb://localhost/feed-text';
 const { log } = console;
 const { expect } = require('chai');
 const should = require('chai').should(); // actually call the function
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const server = require('./index');
+const FeedItemModel = require('./models/feed-item.model');
+const UserModel = require('./models/user.model');
 
+const sample = FeedItemModel({ text: 'hola', owner: new UserModel({ username: 'Juan' } ) });
+sample.save();
 chai.use(chaiHttp);
 // The API should have a method to list all of the feedItems, with their associated
 // comments and user names in a single request.
@@ -13,36 +18,36 @@ chai.use(chaiHttp);
 // the element with missing data should not be returned by the API.
 // For example, if the username of a commenter is missing, the comment should not be displayed at all.
 describe('listFeedItems', () => {
-  // it('Should have a name field of type String', () => {
-  //   const feedItems = feedService.fetch();
-  //   feedItems.forEach((feedItem) => {
-  //     feedItem.should.be.a('object');
-  //     feedItem.should.have.a.property('createdAt');
-  //     try {
-  //       feedItem.should.have.a.property('text');
-  //     } catch (e) {
-  //       log(feedItem, ' has not text', e);
-  //     }
-  //     feedItem.should.have.a.property('owner').with.has.a.property('username');
-  //     feedItem.comments.forEach((comment) => {
-  //       try {
-  //         comment.should.have.a.property('text');
-  //         comment.should.have.a.property('username');
-  //         comment.should.have.a.property('createdAt');
-  //       } catch (e) {
-  //         log(comment, 'missing property ', e);
-  //       }
-  //     });
-  //   });
-  // });
-  // it('Should be filtered by filterFeedByOwnerId', () => {
-  //   const feedItems = feedService.fetch({filterFeedByOwnerId: 10 });
-  //   feedItems.forEach((feedItem) => {
-  //     feedItem.should.be.a('object');
-  //     feedItem.should.have.a.property('owner').with.has.a.property('id');
-  //     expect(feedItem.owner.id).be.equal(10);
-  //   });
-  // });
+  it('Should have a name field of type String', async () => {
+    const feedItems = await FeedItemModel.find();
+    feedItems.forEach((feedItem) => {
+      feedItem.should.be.a('object');
+      feedItem.should.have.a.property('createdAt');
+      try {
+        feedItem.should.have.a.property('text');
+      } catch (e) {
+        log(feedItem, ' has not text', e);
+      }
+      feedItem.should.have.a.property('owner').with.has.a.property('username');
+      feedItem.comments.forEach((comment) => {
+        try {
+          comment.should.have.a.property('text');
+          comment.should.have.a.property('username');
+          comment.should.have.a.property('createdAt');
+        } catch (e) {
+          log(comment, 'missing property ', e);
+        }
+      });
+    });
+  });
+  it('Should be filtered by filterFeedByOwnerId', () => {
+    const feedItems = FeedItemModel.fetch({ filterFeedByOwnerId: 10 });
+    feedItems.forEach((feedItem) => {
+      feedItem.should.be.a('object');
+      feedItem.should.have.a.property('owner').with.has.a.property('id');
+      expect(feedItem.owner.id).be.equal(10);
+    });
+  });
 });
 
 describe('/GET feed', () => {
