@@ -30,13 +30,14 @@
   },
   "devDependencies": {
     "babel-register": "^6.26.0",
-    "chai-http": "^4.2.0",
     "chai": "^4.2.0",
+    "chai-http": "^4.2.0",
     "eslint": "^5.9.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",
     "mocha": "^5.2.0",
     "sinon": "^7.1.1",
-    "sinon-chai": "^3.3.0"
+    "sinon-chai": "^3.3.0",
+    "supertest": "^3.3.0"
   }
 }
