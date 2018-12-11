@@ -26,7 +26,8 @@
     "express-graphql": "^0.7.1",
     "graphql": "^14.0.2",
     "helmet": "^3.15.0",
-    "mongoose": "^5.3.15"
+    "mongoose": "^5.3.15",
+    "promisify": "0.0.3"
   },
   "devDependencies": {
     "babel-register": "^6.26.0",
