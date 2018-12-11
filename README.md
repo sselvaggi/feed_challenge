@@ -1,13 +1,20 @@
 # Install 
 clone this repo and to the directory with your command line interface
+Check server port and mongoDB availability or config it on .env file
 ```
-docker-compose up --build
+PORT=8080
+BASE_URL=http://localhost:8080
+MONGODB_URI=mongodb://localhost:27017/feed
+MONGODB_URI_TEST=mongodb://localhost:27017/feed-test
+```
+Run in command line interface
+```
+npm install; npm run start
 ```
 ##Load default data (optional)
 ```
 npm run default-dump
 ```
-
 Use the REST API with a single method
 GET http://localhost:8080/api/feed
 
@@ -15,23 +22,20 @@ or
 
 Use the GraphQL API at http://localhost:8080/graphql
 ```
-query consumeFeed($filterFeedByOwnerId: Int,) {
-    feed(filterFeedByOwnerId: $filterFeedByOwnerId) {
-        text,
-        createdAt,
-        owner {
-    		id,
-            username
-        },
-    	comments {
-    		id,
-            text,
-            owner {
-                id,
-                username
-            } 
-    	}
+query getSingleFeedItem($feedOwnerId: Int) {
+  feed(filterFeedByOwnerId: $feedOwnerId) {
+    text
+    createdAt
+    owner {
+      username
     }
+    comments {
+      text
+      owner {
+        username
+      }
+    }
+  }
 }
 ```
 
@@ -39,7 +43,7 @@ If is defined "filterFeedByOwnerId" the feed will be filtered by Owner's id
 variables:
 ```
 {
-  "filterFeedByOwnerId": 1
+  "feedOwnerId": 1
 }
 ```
 

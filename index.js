@@ -11,7 +11,7 @@ const {
   buildSchema, graphql, GraphQLObjectType, GraphQLSchema,
 } = require('graphql');
 
-mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true });
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/feed', { useNewUrlParser: true });
 mongoose.connection.on('error', console.error.bind(console, 'connection error:'));
 mongoose.connection.once('open', () => {});
 
@@ -23,7 +23,7 @@ app.use(cors());
 app.use(helmet());
 app.use(bodyParser.json());
 apiRouter.get('/feed', async (req, res) => {
-  res.json(await FeedItemModel.find());
+  res.json(await FeedItemModel.find().populate('owner'));
 });
 app.use('/api', apiRouter);
 app.use(express.static('public'));
@@ -52,7 +52,10 @@ app.use('/graphql', expressGraphql({
   rootValue: {
     async feed(args) {
       console.log('args', args);
-      const result = await FeedItemModel.find();
+      const id = args.filterFeedByOwnerId ? args.filterFeedByOwnerId : 0;
+      const filter = id ? { id } : null;
+      const result = await FeedItemModel.find(filter).populate('owner');
+      
       return result;
     },
   },

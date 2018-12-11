@@ -11,34 +11,36 @@ mongoose.connection.on('error', console.error.bind(console, 'connection error:')
 mongoose.connection.once('open', () => {});
 
 (async () => {
-  await UserModel.remove();
-  await FeedItemModel.remove();
-  UserData.forEach((userData) => {
+  await UserModel.deleteMany({});
+  await FeedItemModel.deleteMany({});
+  await Promise.all(UserData.map(async (userData) => {
     const user = UserModel({
       id: userData.userid,
       username: userData.username,
       createdAt: userData.createdAt,
     });
-    user.save((err, data) => { console.log(`user #${data.id} saved`)});
-  });
-  FeedData.forEach(async (feedData) => {
-    const comments = CommentsData.filter(comment => (comment.feedid === feedData.feedid));
+    return user.save((err, data) => { console.log(err || `user #${data.id} saved`); });
+  }));
+  await Promise.all(FeedData.map(async (feedData) => {
+    let comments = CommentsData.filter(comment => (comment.feedid === feedData.feedid))
+      .map(async (comment) => {
+        const commentuser = await UserModel.find({ id: comment.userid });
+        console.log('commentuser', commentuser);
+        return {
+          text: comment.commentText,
+          owner: mongoose.Types.ObjectId(commentuser._id),
+        };
+      });
+    comments = await Promise.all(comments);
     const user = await UserModel.find({ id: feedData.userid });
-    comments.map(async (comment) => {
-      const commentuser = await UserModel.find({ id: comment.userid });
-      return {
-        text: comment.commentText,
-        owner: commentuser._id,
-      };
-    });
     const feedItem = FeedItemModel({
       id: feedData.feedid,
       text: feedData.FeedText,
       createdAt: feedData.createdAt,
-      owner: user._id,
+      owner: mongoose.Types.ObjectId(user._id),
       comments,
     });
-    feedItem.save((err, data)=>{console.log(`feed #${data.id} saved`)});
-  });
+    return feedItem.save((err, data) => { console.log(err || `feed #${data.id} saved`); });
+  }));
   console.log('finished!');
 })();
