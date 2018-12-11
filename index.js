@@ -2,19 +2,18 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const express = require('express');
 const bodyParser = require('body-parser');
+const {
+  buildSchema, graphql, GraphQLObjectType, GraphQLSchema,
+} = require('graphql');
 const expressGraphql = require('express-graphql');
 const cors = require('cors');
 const helmet = require('helmet');
 const UserModel = require('./models/user.model');
 const FeedItemModel = require('./models/feed-item.model');
-const {
-  buildSchema, graphql, GraphQLObjectType, GraphQLSchema,
-} = require('graphql');
 
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/feed', { useNewUrlParser: true });
+mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true });
 mongoose.connection.on('error', console.error.bind(console, 'connection error:'));
-mongoose.connection.once('open', () => {});
-
+mongoose.connection.once('open', () => { log(`connection open: ${process.env.MONGODB_URI}`); });
 
 const { log } = console;
 const app = express();
@@ -22,8 +21,10 @@ const apiRouter = express.Router();
 app.use(cors());
 app.use(helmet());
 app.use(bodyParser.json());
-apiRouter.get('/feed', async (req, res) => {
-  res.json(await FeedItemModel.find().populate('owner'));
+apiRouter.get('/feed', (req, res) => {
+  FeedItemModel.find({}, (err, data) => {
+    res.json(data);
+  });
 });
 app.use('/api', apiRouter);
 app.use(express.static('public'));
@@ -50,12 +51,10 @@ app.use('/graphql', expressGraphql({
     },
   `),
   rootValue: {
-    async feed(args) {
-      console.log('args', args);
+    feed(args) {
       const id = args.filterFeedByOwnerId ? args.filterFeedByOwnerId : 0;
       const filter = id ? { id } : null;
-      const result = await FeedItemModel.find(filter).populate('owner');
-      
+      const result = FeedItemModel.find(filter);
       return result;
     },
   },
