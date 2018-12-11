@@ -11,36 +11,48 @@ mongoose.connection.on('error', console.error.bind(console, 'connection error:')
 mongoose.connection.once('open', () => {});
 
 (async () => {
-  await UserModel.deleteMany({});
-  await FeedItemModel.deleteMany({});
-  await Promise.all(UserData.map(async (userData) => {
+  await Promise.all([UserModel.deleteMany({}), FeedItemModel.deleteMany({})]);
+  const usersById = {};
+  const allUserPromises = [];
+  UserData.forEach((userData) => {
     const user = UserModel({
       id: userData.userid,
       username: userData.username,
       createdAt: userData.createdAt,
     });
-    return user.save((err, data) => { console.log(err || `user #${data.id} saved`); });
-  }));
-  await Promise.all(FeedData.map(async (feedData) => {
-    let comments = CommentsData.filter(comment => (comment.feedid === feedData.feedid))
-      .map(async (comment) => {
-        const commentuser = await UserModel.find({ id: comment.userid });
-        console.log('commentuser', commentuser);
-        return {
-          text: comment.commentText,
-          owner: mongoose.Types.ObjectId(commentuser._id),
-        };
+    usersById[userData.userid] = user;
+    allUserPromises.push(new Promise((resolve, reject) => {
+      user.save((err, data) => {
+        if (err) reject(err);
+        else resolve(data);
       });
-    comments = await Promise.all(comments);
-    const user = await UserModel.find({ id: feedData.userid });
-    const feedItem = FeedItemModel({
-      id: feedData.feedid,
-      text: feedData.FeedText,
-      createdAt: feedData.createdAt,
-      owner: mongoose.Types.ObjectId(user._id),
-      comments,
-    });
-    return feedItem.save((err, data) => { console.log(err || `feed #${data.id} saved`); });
-  }));
-  console.log('finished!');
+    }));
+  });
+  await Promise.all(allUserPromises);
+  const allFeedItemPromises = [];
+  FeedData.forEach((feedData) => {
+    const comments = CommentsData.filter(comment => (comment.feedid === feedData.feedid && comment.userid && usersById[comment.userid]))
+      .map(comment => ({
+        text: comment.commentText,
+        owner: usersById[comment.userid].id,
+      }));
+    if (usersById[feedData.userid]) {
+      const feedItem = FeedItemModel({
+        id: feedData.feedid,
+        text: feedData.FeedText,
+        createdAt: feedData.createdAt,
+        owner: usersById[feedData.userid].id,
+        comments,
+      });
+      allFeedItemPromises.push(new Promise((resolve, reject) => {
+        feedItem.save((err, data) => {
+          if (err) reject(err);
+          else resolve(data);
+        });
+      }));
+    }
+  });
+  await Promise.all(allFeedItemPromises);
+  console.log('Finish.');
+  process.exit();
 })();
