@@ -1,42 +1,31 @@
 require('dotenv').config();
-const mongoose = require('mongoose');
-const util = require('util');
+const monk = require('monk');
 const express = require('express');
 const bodyParser = require('body-parser');
 const {
-  buildSchema, graphql, GraphQLObjectType, GraphQLSchema,
+  buildSchema, // graphql, GraphQLObjectType, GraphQLSchema,
 } = require('graphql');
 const expressGraphql = require('express-graphql');
 const cors = require('cors');
 const helmet = require('helmet');
-const UserModel = require('./models/user.model');
-const FeedItemModel = require('./models/feed-item.model');
+const FeedModel = require('./models/feed-item.model');
 
-
-mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true });
-mongoose.connection.on('error', console.error.bind(console, 'connection error:'));
-mongoose.connection.once('open', () => { log(`connection open: ${process.env.MONGODB_URI}`); });
-
-const { log } = console;
+const db = monk(process.env.MONGODB_URI);
+FeedModel.setUserBucket(db.get('users'));
+FeedModel.setFeedItemBucket(db.get('feeditems'));
 const app = express();
-
+app.use(cors());
+app.use(helmet());
+app.use(bodyParser.json());
+app.use(express.static('public'));
+app.set('db', db);
 const appRouter = {
   async feed(args) {
     const id = args.filterFeedByOwnerId ? args.filterFeedByOwnerId : 0;
     const filter = id ? { id } : null;
-    return FeedItemModel.getAll(filter);
-  }
+    return FeedModel.getAll(filter);
+  },
 };
-const apiRouter = express.Router();
-app.use(cors());
-app.use(helmet());
-app.use(bodyParser.json());
-apiRouter.get('/feed', async (req, res) => {
-  res.json(await appRouter.feed(req.params));
-});
-app.use('/api', apiRouter);
-app.use(express.static('public'));
-
 app.use('/graphql', expressGraphql({
   graphiql: true,
   schema: buildSchema(`
@@ -60,7 +49,22 @@ app.use('/graphql', expressGraphql({
   `),
   rootValue: appRouter,
 }));
-
-
-app.listen(process.env.PORT || 8080, () => log(`Server listening on port ${process.env.PORT || 8080}...`));
+const apiRouter = express.Router();
+apiRouter.get('/feed', async (req, res) => {
+  res.json(await appRouter.feed(req.params));
+});
+app.use('/api', apiRouter);
+app.listen(process.env.PORT || 8080, () => console.log(`Server listening on port ${process.env.PORT || 8080}...`));
 module.exports = app;
+// TODO wrap in a function or a library https://stackoverflow.com/questions/14031763/doing-a-cleanup-action-just-before-node-js-exits
+// function exitHandler(options, exitCode) {
+//   db.close();
+//   if (options.cleanup) console.log('clean');
+//   if (exitCode || exitCode === 0) console.log(exitCode);
+//   if (options.exit) process.exit();
+// }
+// process.on('exit', exitHandler.bind(null, { cleanup: true }));
+// process.on('SIGINT', exitHandler.bind(null, { exit: true }));
+// process.on('SIGUSR1', exitHandler.bind(null, { exit: true }));
+// process.on('SIGUSR2', exitHandler.bind(null, { exit: true }));
+// process.on('uncaughtException', exitHandler.bind(null, { exit: true }));

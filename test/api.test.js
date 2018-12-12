@@ -1,10 +1,11 @@
-process.env.MONGODB_URI_TEST = 'mongodb://localhost:27017/feed-test';
-const { log } = console;
+// process.env.MONGODB_URI_TEST = 'mongodb://localhost:27017/feed-test';
 const request = require('supertest');
 const { expect, should } = require('chai');
-const server = require('../index');
-const FeedItemModel = require('../models/feed-item.model');
-const UserModel = require('../models/user.model');
+const app = require('../index');
+
+const db = app.get('db');
+const users = db.get('users');
+const feeditems = db.get('feeditems');
 
 // The API should have a method to list all of the feedItems, with their associated
 // comments and user names in a single request.
@@ -14,12 +15,10 @@ const UserModel = require('../models/user.model');
 // For example, if the username of a commenter is missing, the comment should not be displayed at all.
 describe('/GET feed', async () => {
   beforeEach(async () => {
-    const user1 = new UserModel({ username: 'Sergio', id: 1 });
-    const user2 = new UserModel({ username: 'Tommy', id: 2 });
-    const user3 = new UserModel({ username: 'Other', id: 3 });
-    await user1.save();
-    await user2.save();
-    const feed1 = new FeedItemModel({
+    const user1 = await users.insert({ username: 'Sergio', id: 1 });
+    const user2 = await users.insert({ username: 'Tommy', id: 2 });
+    const user3 = await users.insert({ username: 'Other', id: 3 });
+    const feed1 = await feeditems.insert({
       text: 'Fun Fun Function',
       owner: user1.id,
       id: 1,
@@ -31,23 +30,20 @@ describe('/GET feed', async () => {
         owner: 1,
       }],
     });
-    const feed2 = new FeedItemModel({
+    const feed2 = await feeditems.insert({
       text: 'JS in Action',
       owner: user2.id,
       id: 2,
       comments: [{ text: 'I´ve never had an account... Bad data', owner: -1 }],
     });
-    const feedUnknown = new FeedItemModel({ text: 'Unknown user feed', owner: -1, id: 3 });
-    await feed1.save();
-    await feed2.save();
-    await feedUnknown.save();
+    const feedUnknown = await feeditems.insert({ text: 'Unknown user feed', owner: -1, id: -1 });
   });
   afterEach(async () => {
-    await UserModel.deleteMany({});
-    await FeedItemModel.deleteMany({});
+    await users.drop({});
+    await feeditems.drop({});
   });
   it('rest feed query', (done) => {
-    request(server)
+    request(app)
       .get('/api/feed')
       .expect('Content-Type', /json/)
       .expect(200)
@@ -58,7 +54,7 @@ describe('/GET feed', async () => {
       });
   });
   it('grapql feed query', (done) => {
-    request(server)
+    request(app)
       .post('/graphql?')
       .type('application/json')
       .send({
@@ -84,13 +80,18 @@ describe('/GET feed', async () => {
       .expect('Content-Type', /json/)
       .expect(200)
       .end((err, res) => {
-        console.log('res', res.body.data.feed[0]);
         if (err) throw err;
+        console.log('res.body.data.feed', res.body.data.feed);
         expect(res.body.data.feed.length).to.be.eq(2);
-        res.body.data.feed.forEach(x => {
-          expect(x).to.have.a.property('text');
-          expect(x).to.have.a.property('owner');
-          expect(x).to.have.a.property('comments');
+        res.body.data.feed.forEach((feed) => {
+          expect(feed).to.have.a.property('text');
+          expect(feed).to.have.a.property('owner');
+          expect(feed.owner).to.have.a.property('username');
+          expect(feed).to.have.a.property('comments');
+          feed.comments.forEach((comment) => {
+            expect(comment).to.have.a.property('owner');
+            expect(comment.owner).to.have.a.property('username');
+          });
         });
         done();
       });
