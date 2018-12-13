@@ -10,7 +10,6 @@ const feeditems = db.get('feeditems');
 
 (async () => {
   await Promise.all([users.drop({}), feeditems.drop({})]);
-  const usersById = {};
   const allUserPromises = [];
   UserData.forEach((userData) => {
     allUserPromises.push(users.insert({

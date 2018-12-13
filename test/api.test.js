@@ -2,6 +2,8 @@
 const request = require('supertest');
 const { expect, should } = require('chai');
 const app = require('../index');
+describe('/GET feed', async () => {
+  const { mocha } = require('mocha');
 
 const db = app.get('db');
 const users = db.get('users');
@@ -15,6 +17,8 @@ const feeditems = db.get('feeditems');
 // For example, if the username of a commenter is missing, the comment should not be displayed at all.
 describe('/GET feed', async () => {
   beforeEach(async () => {
+    await users.drop({});
+    await feeditems.drop({});
     const user1 = await users.insert({ username: 'Sergio', id: 1 });
     const user2 = await users.insert({ username: 'Tommy', id: 2 });
     const user3 = await users.insert({ username: 'Other', id: 3 });
@@ -37,10 +41,6 @@ describe('/GET feed', async () => {
       comments: [{ text: 'I´ve never had an account... Bad data', owner: -1 }],
     });
     const feedUnknown = await feeditems.insert({ text: 'Unknown user feed', owner: -1, id: -1 });
-  });
-  afterEach(async () => {
-    await users.drop({});
-    await feeditems.drop({});
   });
   it('rest feed query', (done) => {
     request(app)
